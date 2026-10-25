@@ -91,7 +91,8 @@ def page(content, data, config, mapping, revision):
     v = config.values
     def link(item):
         return item if remote(item) else mapping[item]
-    styles = ''.join(f'<link rel="stylesheet" href="{html.escape(link(x), quote=True)}">' for x in v['style_links'])
+    builtin = '<link rel="stylesheet" href="/__mdlive/themes/basic.css">' if v['theme'] == 'basic' else ''
+    styles = builtin + ''.join(f'<link rel="stylesheet" href="{html.escape(link(x), quote=True)}">' for x in v['style_links'])
     styles += ''.join(f'<style>{x}</style>' for x in v['styles'])
     scripts = ''.join(f'<script>{x}</script>' for x in v['scripts'])
     scripts += ''.join(f'<script src="{html.escape(link(x), quote=True)}" onerror="console.error(\'Theme script failed\',this.src)"></script>' for x in v['script_links'])

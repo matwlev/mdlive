@@ -77,6 +77,7 @@ There is no built-in sidebar or generated directory listing. Themes can use the 
 | `--open` | Open the preview in the default browser | Off |
 | `--host ADDRESS` | Listening address | `127.0.0.1` |
 | `--port PORT` | Listening port | `8000` |
+| `--theme basic\|none` | Built-in theme; `none` uses browser styling | `basic` |
 | `--config PATH` | Select a configuration file explicitly | See configuration lookup |
 | `--style CSS` | Inject inline CSS in a `<style>` tag; repeatable | None |
 | `--script JS` | Inject inline JavaScript in a `<script>` tag; repeatable | None |
@@ -105,6 +106,7 @@ Relative paths in configuration resolve against the configuration file's directo
 
 ```json
 {
+  "theme": "basic",
   "host": "127.0.0.1",
   "port": 8000,
   "open": false,
@@ -126,11 +128,13 @@ Relative paths in configuration resolve against the configuration file's directo
 
 ## Rendering and themes
 
-Without a theme, mdlive renders basic Markdown using browser-default styling. It includes no visual CSS or navigation UI.
+mdlive uses the bundled **basic** reading theme by default: light-only, system fonts, a comfortable reading column, and underlined blue links. It adds no navigation or theme JavaScript and makes no external requests. Authors provide navigation through Markdown links.
+
+Use `mdlive --theme none` for browser-default styling, or set `"theme": "none"` in configuration. `--theme basic` explicitly selects the default. CLI selection overrides configuration; edits to the selected config reload the page. Unsupported theme names produce an error.
 
 Embedded HTML is sanitized: safe formatting is retained, while scripts and unsafe attributes are removed. Syntax highlighting, GitHub-specific Markdown extensions, Mermaid, and math rendering are outside v1.
 
-A theme is a collection of injected CSS and JavaScript supplied through CLI options or configuration. There is no separate theme package format or full-page template interface in v1.
+Custom themes are collections of injected CSS and optional JavaScript supplied through CLI options or configuration. There is no separate custom theme package format or full-page template interface in v1. Custom styles can extend basic or replace it by selecting `none`.
 
 ```sh
 # Inline styles and scripts
@@ -147,11 +151,27 @@ mdlive ./docs --config ./preview.json
 
 Injection order is:
 
-1. Stylesheet links, then inline styles, in the document head.
+1. The selected built-in stylesheet, then custom stylesheet links, then inline styles, in the document head.
 2. The rendered Markdown content in the body.
 3. Inline scripts, then linked scripts, at the end of the body.
 
 Order within each array follows configuration or CLI order. Theme scripts are explicitly trusted and execute in the preview page; sanitization applies to document content.
+
+### Basic theme tokens
+
+Basic uses two tiers of CSS custom properties, all prefixed `--mdl-`. **Options** name literal values; **intents** map directly to options and describe their purpose. Styling rules consume intents.
+
+Color options include exact `--mdl-color-white` and `--mdl-color-black`, plus `gray`, `blue`, `red`, `orange`, `yellow`, `green`, and `purple` ramps numbered `10` through `90`. Higher numbers mean darker shades. Other options cover font families, sizes, weights, line heights, spacing, widths, borders, and radii. The bundled stylesheet is the complete token reference.
+
+`--mdl-palette-primary` is the accent. Each semantic background has a matching `-contrast` foreground, such as `primary-contrast` or `surface-contrast`. The page uses the explicit pair `palette-background` and `palette-text`. Foreground-only tokens such as `palette-link` need no contrast partner. Default text/background pairs meet at least 4.5:1 contrast; preserve that contrast when overriding tokens.
+
+Load overrides with `--style-link`, or use inline CSS:
+
+```sh
+mdlive --style ':root { --mdl-palette-primary: var(--mdl-color-purple-70); --mdl-palette-primary-contrast: var(--mdl-color-white); --mdl-palette-link: var(--mdl-color-purple-70); --mdl-layout-content-width: 65ch; }'
+```
+
+Links and primary are separate intents, so changing the accent alone does not change link color. Typography intents include `--mdl-type-body-size` and `--mdl-type-title-1-size`; spacing includes `--mdl-space-paragraph`. Basic stays light even when the system prefers dark mode. Dark mode is reserved for a future extension through semantic mappings.
 
 ### Theme interface
 

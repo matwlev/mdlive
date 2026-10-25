@@ -306,3 +306,36 @@ def test_unreadable_markdown_metadata_does_not_break_file_list(project, monkeypa
     app = App(config('README.md'))
     assert app.files() == ['/README.md']
     assert app.snapshot('/')['data']['headings'][0]['id'] == 'hello'
+
+
+def test_builtin_theme_selection_and_reload(project):
+    assert config().values['theme'] == 'basic'
+    selected = project / 'config.json'
+    selected.write_text('{"theme": "none"}')
+    assert config().values['theme'] == 'none'
+    assert config('--theme', 'basic').values['theme'] == 'basic'
+    selected.write_text('{"theme": "unknown"}')
+    with pytest.raises(ValueError, match='theme'):
+        config()
+    with pytest.raises(SystemExit):
+        config('--theme', 'unknown')
+    selected.write_text('{"theme": "basic"}')
+    (project / 'override.css').write_text(':root { --mdl-palette-text: red; }')
+    with serving(config('--style-link', 'override.css', '--style', '/* last */')) as (app, base):
+        page = get(base + '/')
+        assert page.index('/__mdlive/themes/basic.css') < page.index('/__mdlive/assets/0') < page.index('/* last */')
+        with urlopen(base + '/__mdlive/themes/basic.css') as response:
+            assert response.headers.get_content_type() == 'text/css'
+            assert '--mdl-palette-primary-contrast' in response.read().decode()
+        for route in ('/__mdlive/themes/config.py', '/__mdlive/themes/../config.py'):
+            with pytest.raises(HTTPError) as error:
+                get(base + route)
+            assert error.value.code == 404
+        before = app.reload_revision
+        selected.write_text('{"theme": "none"}')
+        app.changed([selected])
+        assert app.reload_revision != before
+        assert '/__mdlive/themes/basic.css' not in get(base + '/')
+        selected.write_text('{"theme": "invalid"}')
+        app.changed([selected])
+        assert app.config.values['theme'] == 'none'

@@ -1,0 +1,253 @@
+/* Basic: options name values; intents name their purpose. Light mode only. */
+:root {
+  /* Options */
+  --mdl-color-white: #ffffff;
+  --mdl-color-black: #000000;
+  --mdl-color-gray-10: #f5f5f5;
+  --mdl-color-gray-20: #e5e5e5;
+  --mdl-color-gray-30: #d4d4d4;
+  --mdl-color-gray-40: #a3a3a3;
+  --mdl-color-gray-50: #737373;
+  --mdl-color-gray-60: #525252;
+  --mdl-color-gray-70: #404040;
+  --mdl-color-gray-80: #262626;
+  --mdl-color-gray-90: #171717;
+  --mdl-color-blue-10: #eff6ff;
+  --mdl-color-blue-20: #dbeafe;
+  --mdl-color-blue-30: #bfdbfe;
+  --mdl-color-blue-40: #93c5fd;
+  --mdl-color-blue-50: #3b82f6;
+  --mdl-color-blue-60: #005fcc;
+  --mdl-color-blue-70: #1d4ed8;
+  --mdl-color-blue-80: #1e40af;
+  --mdl-color-blue-90: #172554;
+  --mdl-color-red-10: #fef2f2;
+  --mdl-color-red-20: #fee2e2;
+  --mdl-color-red-30: #fecaca;
+  --mdl-color-red-40: #fca5a5;
+  --mdl-color-red-50: #ef4444;
+  --mdl-color-red-60: #dc2626;
+  --mdl-color-red-70: #b91c1c;
+  --mdl-color-red-80: #991b1b;
+  --mdl-color-red-90: #450a0a;
+  --mdl-color-orange-10: #fff7ed;
+  --mdl-color-orange-20: #ffedd5;
+  --mdl-color-orange-30: #fed7aa;
+  --mdl-color-orange-40: #fdba74;
+  --mdl-color-orange-50: #f97316;
+  --mdl-color-orange-60: #ea580c;
+  --mdl-color-orange-70: #c2410c;
+  --mdl-color-orange-80: #9a3412;
+  --mdl-color-orange-90: #431407;
+  --mdl-color-yellow-10: #fefce8;
+  --mdl-color-yellow-20: #fef9c3;
+  --mdl-color-yellow-30: #fef08a;
+  --mdl-color-yellow-40: #fde047;
+  --mdl-color-yellow-50: #eab308;
+  --mdl-color-yellow-60: #ca8a04;
+  --mdl-color-yellow-70: #a16207;
+  --mdl-color-yellow-80: #854d0e;
+  --mdl-color-yellow-90: #422006;
+  --mdl-color-green-10: #f0fdf4;
+  --mdl-color-green-20: #dcfce7;
+  --mdl-color-green-30: #bbf7d0;
+  --mdl-color-green-40: #86efac;
+  --mdl-color-green-50: #22c55e;
+  --mdl-color-green-60: #16a34a;
+  --mdl-color-green-70: #15803d;
+  --mdl-color-green-80: #166534;
+  --mdl-color-green-90: #052e16;
+  --mdl-color-purple-10: #faf5ff;
+  --mdl-color-purple-20: #f3e8ff;
+  --mdl-color-purple-30: #e9d5ff;
+  --mdl-color-purple-40: #d8b4fe;
+  --mdl-color-purple-50: #a855f7;
+  --mdl-color-purple-60: #9333ea;
+  --mdl-color-purple-70: #7e22ce;
+  --mdl-color-purple-80: #6b21a8;
+  --mdl-color-purple-90: #3b0764;
+  --mdl-font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mdl-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mdl-font-size-sm: .875rem;
+  --mdl-font-size-md: 1.0625rem;
+  --mdl-font-size-lg: 1.25rem;
+  --mdl-font-size-xl: 1.5rem;
+  --mdl-font-size-2xl: 2rem;
+  --mdl-font-size-3xl: 2.5rem;
+  --mdl-font-weight-regular: 400;
+  --mdl-font-weight-semibold: 600;
+  --mdl-line-height-body: 1.6;
+  --mdl-line-height-heading: 1.2;
+  --mdl-space-0: 0;
+  --mdl-space-1: .25rem;
+  --mdl-space-2: .5rem;
+  --mdl-space-3: .75rem;
+  --mdl-space-4: 1rem;
+  --mdl-space-6: 1.5rem;
+  --mdl-space-8: 2rem;
+  --mdl-space-12: 3rem;
+  --mdl-width-reading: 70ch;
+  --mdl-width-full: 100%;
+  --mdl-width-print: 100%;
+  --mdl-border-width-thin: 1px;
+  --mdl-border-width-thick: 3px;
+  --mdl-radius-sm: .25rem;
+  --mdl-line-width-thin: .06em;
+  --mdl-offset-sm: .15em;
+  --mdl-size-tab: 4;
+
+  /* Intents: override these after the bundled stylesheet. */
+  --mdl-palette-background: var(--mdl-color-white);
+  --mdl-palette-text: var(--mdl-color-gray-90);
+  --mdl-palette-primary: var(--mdl-color-blue-60);
+  --mdl-palette-primary-contrast: var(--mdl-color-white);
+  --mdl-palette-link: var(--mdl-color-blue-60);
+  --mdl-palette-focus: var(--mdl-color-blue-60);
+  --mdl-palette-surface: var(--mdl-color-gray-10);
+  --mdl-palette-surface-contrast: var(--mdl-color-gray-90);
+  --mdl-palette-border: var(--mdl-color-gray-20);
+  --mdl-palette-quote: var(--mdl-color-gray-70);
+  --mdl-type-body-family: var(--mdl-font-family-sans);
+  --mdl-type-code-family: var(--mdl-font-family-mono);
+  --mdl-type-body-size: var(--mdl-font-size-md);
+  --mdl-type-code-size: var(--mdl-font-size-sm);
+  --mdl-type-body-weight: var(--mdl-font-weight-regular);
+  --mdl-type-heading-weight: var(--mdl-font-weight-semibold);
+  --mdl-type-body-line-height: var(--mdl-line-height-body);
+  --mdl-type-heading-line-height: var(--mdl-line-height-heading);
+  --mdl-layout-content-width: var(--mdl-width-reading);
+  --mdl-layout-media-width: var(--mdl-width-full);
+  --mdl-layout-print-width: var(--mdl-width-print);
+  --mdl-space-page-inline: var(--mdl-space-6);
+  --mdl-space-page-block: var(--mdl-space-12);
+  --mdl-space-page-small: var(--mdl-space-4);
+  --mdl-space-paragraph: var(--mdl-space-4);
+  --mdl-space-section: var(--mdl-space-8);
+  --mdl-space-heading-after: var(--mdl-space-3);
+  --mdl-space-list-indent: var(--mdl-space-6);
+  --mdl-space-list-item: var(--mdl-space-1);
+  --mdl-space-code-block: var(--mdl-space-4);
+  --mdl-space-code-inline: var(--mdl-space-1);
+  --mdl-space-cell-block: var(--mdl-space-2);
+  --mdl-space-cell-inline: var(--mdl-space-3);
+  --mdl-space-quote: var(--mdl-space-4);
+  --mdl-space-reset: var(--mdl-space-0);
+  --mdl-space-anchor: var(--mdl-space-4);
+  --mdl-border-width: var(--mdl-border-width-thin);
+  --mdl-border-quote-width: var(--mdl-border-width-thick);
+  --mdl-border-radius: var(--mdl-radius-sm);
+  --mdl-focus-width: var(--mdl-border-width-thick);
+  --mdl-focus-offset: var(--mdl-space-1);
+  --mdl-link-underline-width: var(--mdl-line-width-thin);
+  --mdl-link-underline-offset: var(--mdl-offset-sm);
+  --mdl-code-tab-size: var(--mdl-size-tab);
+  --mdl-type-title-1-size: var(--mdl-font-size-3xl);
+  --mdl-type-title-2-size: var(--mdl-font-size-2xl);
+  --mdl-type-title-3-size: var(--mdl-font-size-xl);
+  --mdl-type-title-4-size: var(--mdl-font-size-lg);
+  --mdl-type-title-5-size: var(--mdl-font-size-md);
+  --mdl-type-title-6-size: var(--mdl-font-size-sm);
+}
+
+:root { color-scheme: light; }
+body {
+  margin: var(--mdl-space-reset);
+  background: var(--mdl-palette-background);
+  color: var(--mdl-palette-text);
+  font-family: var(--mdl-type-body-family);
+  font-size: var(--mdl-type-body-size);
+  font-weight: var(--mdl-type-body-weight);
+  line-height: var(--mdl-type-body-line-height);
+}
+#mdlive-content {
+  box-sizing: content-box;
+  max-width: var(--mdl-layout-content-width);
+  margin-inline: auto;
+  padding: var(--mdl-space-page-block) var(--mdl-space-page-inline);
+  overflow-wrap: anywhere;
+}
+#mdlive-content :where(h1, h2, h3, h4, h5, h6) {
+  margin-block: var(--mdl-space-section) var(--mdl-space-heading-after);
+  font-weight: var(--mdl-type-heading-weight);
+  line-height: var(--mdl-type-heading-line-height);
+  scroll-margin-block-start: var(--mdl-space-anchor);
+}
+#mdlive-content > :first-child { margin-block-start: var(--mdl-space-reset); }
+#mdlive-content > :last-child { margin-block-end: var(--mdl-space-reset); }
+#mdlive-content h1 { font-size: var(--mdl-type-title-1-size); }
+#mdlive-content h2 { font-size: var(--mdl-type-title-2-size); }
+#mdlive-content h3 { font-size: var(--mdl-type-title-3-size); }
+#mdlive-content h4 { font-size: var(--mdl-type-title-4-size); }
+#mdlive-content h5 { font-size: var(--mdl-type-title-5-size); }
+#mdlive-content h6 { font-size: var(--mdl-type-title-6-size); }
+#mdlive-content :where(p, ul, ol, dl, pre, blockquote, table) {
+  margin-block: var(--mdl-space-reset) var(--mdl-space-paragraph);
+}
+#mdlive-content :where(ul, ol) { padding-inline-start: var(--mdl-space-list-indent); }
+#mdlive-content li + li { margin-block-start: var(--mdl-space-list-item); }
+#mdlive-content li > :where(ul, ol) { margin-block-end: var(--mdl-space-reset); }
+#mdlive-content a {
+  color: var(--mdl-palette-link);
+  text-decoration: underline;
+  text-decoration-thickness: var(--mdl-link-underline-width);
+  text-underline-offset: var(--mdl-link-underline-offset);
+}
+#mdlive-content :focus-visible {
+  outline: var(--mdl-focus-width) solid var(--mdl-palette-focus);
+  outline-offset: var(--mdl-focus-offset);
+}
+#mdlive-content :where(code, pre, kbd, samp) {
+  font-family: var(--mdl-type-code-family);
+  font-size: var(--mdl-type-code-size);
+  tab-size: var(--mdl-code-tab-size);
+}
+#mdlive-content :where(code, kbd, samp) {
+  padding: var(--mdl-space-reset) var(--mdl-space-code-inline);
+  border-radius: var(--mdl-border-radius);
+  color: var(--mdl-palette-surface-contrast);
+  background: var(--mdl-palette-surface);
+}
+#mdlive-content pre {
+  padding: var(--mdl-space-code-block);
+  border-radius: var(--mdl-border-radius);
+  background: var(--mdl-palette-surface);
+  color: var(--mdl-palette-surface-contrast);
+  overflow-x: auto;
+  overflow-wrap: normal;
+}
+#mdlive-content pre code { padding: var(--mdl-space-reset); }
+#mdlive-content blockquote {
+  margin-inline: var(--mdl-space-reset);
+  padding-inline-start: var(--mdl-space-quote);
+  border-inline-start: var(--mdl-border-quote-width) solid var(--mdl-palette-border);
+  color: var(--mdl-palette-quote);
+}
+#mdlive-content blockquote > :last-child { margin-block-end: var(--mdl-space-reset); }
+#mdlive-content hr {
+  border: none;
+  border-block-start: var(--mdl-border-width) solid var(--mdl-palette-border);
+  margin-block: var(--mdl-space-section);
+}
+#mdlive-content :where(img, video) { max-width: var(--mdl-layout-media-width); height: auto; }
+#mdlive-content table {
+  display: block;
+  max-width: var(--mdl-layout-media-width);
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+#mdlive-content :where(th, td) {
+  padding: var(--mdl-space-cell-block) var(--mdl-space-cell-inline);
+  border: var(--mdl-border-width) solid var(--mdl-palette-border);
+  text-align: start;
+}
+#mdlive-content th { font-weight: var(--mdl-type-heading-weight); }
+@media (max-width: 40rem) {
+  #mdlive-content { padding: var(--mdl-space-page-small); }
+}
+@media print {
+  #mdlive-content { max-width: var(--mdl-layout-print-width); padding: var(--mdl-space-reset); }
+  #mdlive-content pre { white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; }
+  #mdlive-content table { display: table; width: var(--mdl-layout-print-width); table-layout: fixed; overflow: visible; }
+  #mdlive-content :where(th, td) { overflow-wrap: anywhere; }
+  #mdlive-content :where(h1, h2, h3, h4, h5, h6) { break-after: avoid; }
+}

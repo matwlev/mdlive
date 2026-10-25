@@ -189,6 +189,13 @@ def make_server(app, host, port):
                         self.wfile.flush()
                     self.close_connection = True
                     return
+                if route == '/__mdlive/themes/basic.css':
+                    self.send(Path(__file__).with_name('themes').joinpath('basic.css').read_bytes(),
+                              'text/css; charset=utf-8')
+                    return
+                if route.startswith('/__mdlive/themes/'):
+                    self.send('Not found', status=404)
+                    return
                 if route == '/__mdlive/client.js':
                     self.send(Path(__file__).with_name('client.js').read_bytes(), 'text/javascript; charset=utf-8')
                     return

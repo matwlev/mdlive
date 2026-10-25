@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ASSETS = ('styles', 'scripts', 'style_links', 'script_links')
-DEFAULTS = dict(host='127.0.0.1', port=8000, open=False, index='README.md',
+DEFAULTS = dict(theme='basic', host='127.0.0.1', port=8000, open=False, index='README.md',
                 styles=[], scripts=[], style_links=[], script_links=[], heading_id_generator=None)
 
 
@@ -20,6 +20,8 @@ def parser():
     p.add_argument('--version', action='version', version=f'mdlive {version("mdlive")}')
     p.add_argument('path', nargs='?', default='.', help='Markdown file or directory (default: .)')
     p.add_argument('--config', type=Path, help='Explicit JSON configuration')
+    p.add_argument('--theme', choices=('basic', 'none'), default=None,
+                   help='Built-in reading theme (default: basic; none for browser styling)')
     p.add_argument('--host', default=None, help='Listening address (default: 127.0.0.1)')
     p.add_argument('--index', default=None, help='Directory entry document (default: README.md)')
     p.add_argument('--port', type=int, default=None, help='Listening port (default: 8000)')
@@ -76,6 +78,8 @@ def load(args, source=None, rediscover=True, generator=None):
     for key, val in values.items():
         if key in ASSETS:
             valid = isinstance(val, list) and all(isinstance(x, str) for x in val)
+        elif key == 'theme':
+            valid = isinstance(val, str) and val in ('basic', 'none')
         elif key == 'port':
             valid = type(val) is int and 1 <= val <= 65535
         elif key == 'open':

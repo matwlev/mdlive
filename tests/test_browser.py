@@ -85,7 +85,7 @@ def test_unstyled_page_and_server_restart(tmp_path, monkeypatch):
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
     document = tmp_path / 'README.md'
     document.write_text('# Before restart')
-    cfg = load(parser().parse_args([]))
+    cfg = load(parser().parse_args(["--theme", "none"]))
     app = App(cfg)
     server = make_server(app, '127.0.0.1', 0)
     port = server.server_address[1]
@@ -109,6 +109,71 @@ def test_unstyled_page_and_server_restart(tmp_path, monkeypatch):
             thread.start()
             page.wait_for_selector('#after-restart', timeout=15000)
             assert page.evaluate('window.mdlive.headings[0].id') == 'after-restart'
+            browser.close()
+    finally:
+        app.close()
+        server.shutdown()
+        server.server_close()
+        thread.join(3)
+
+
+def test_basic_theme_readability_and_overrides(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('HOME', str(tmp_path / 'home'))
+    document = tmp_path / 'README.md'
+    document.write_text('# Reading theme\n\n[Long link](#details) ' + 'https://example.test/' + 'a' * 180 +
+                        '\n\n## Details\n\n> A readable quotation.\n\n- First\n- Second\n\n'
+                        'Inline `code`.\n\n```\n' + 'long_code_' * 50 + '\n```\n\n'
+                        '<table><tr><th>Heading</th><th>Other</th></tr><tr><td>' + 'cell ' * 80 +
+                        '</td><td>Value</td></tr></table>\n\n'
+                        '<img src="image.svg" alt="Example">')
+    (tmp_path / 'image.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="100"><rect width="2000" height="100" fill="blue"/></svg>')
+    app = App(load(parser().parse_args([])))
+    server = make_server(app, '127.0.0.1', 0)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f'http://127.0.0.1:{server.server_address[1]}'
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page(viewport={'width': 1100, 'height': 800}, color_scheme='dark')
+            external = []
+            page.on('request', lambda request: external.append(request.url) if not request.url.startswith(base) else None)
+            page.goto(base + '/#details')
+            assert page.locator('#details').evaluate('(el) => el.getBoundingClientRect().top') < 800
+            assert page.locator('body').evaluate('(el) => getComputedStyle(el).fontSize') == '17px'
+            assert page.locator('body').evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(255, 255, 255)'
+            for width in (1100, 375):
+                page.set_viewport_size({'width': width, 'height': 800})
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                assert page.locator('pre').evaluate('(el) => el.scrollWidth > el.clientWidth')
+                assert page.locator('img').evaluate('(el) => el.width <= document.getElementById("mdlive-content").clientWidth')
+            page.goto(base + '/')
+            page.keyboard.press('Tab')
+            assert page.locator('a').evaluate('(el) => el.matches(":focus-visible") && getComputedStyle(el).outlineStyle === "solid"')
+            assert page.locator('a').evaluate('(el) => getComputedStyle(el).textDecorationLine') == 'underline'
+            # Check actual computed foreground/background pairs, including the accent pair.
+            pairs = page.evaluate('''() => {
+              const s = getComputedStyle(document.documentElement);
+              return [['background', 'text'], ['surface', 'surface-contrast'], ['primary', 'primary-contrast'], ['background', 'link'], ['background', 'quote']]
+                .map(pair => pair.map(name => s.getPropertyValue('--mdl-palette-' + name).trim()));
+            }''')
+            def luminance(color):
+                channels = [int(color[i:i+2], 16) / 255 for i in (1, 3, 5)]
+                linear = [c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4 for c in channels]
+                return sum(a*b for a, b in zip(linear, (.2126, .7152, .0722)))
+            for background, foreground in pairs:
+                values = sorted([luminance(background), luminance(foreground)])
+                assert (values[1] + .05) / (values[0] + .05) >= 4.5
+            page.add_style_tag(content=':root { --mdl-palette-text: var(--mdl-color-purple-90); }')
+            assert page.locator('body').evaluate('(el) => getComputedStyle(el).color') == 'rgb(59, 7, 100)'
+            document.write_text(document.read_text() + '\n\n## Updated')
+            app.changed([document])
+            page.wait_for_selector('#updated')
+            page.emulate_media(media='print')
+            assert page.locator('pre').evaluate('(el) => getComputedStyle(el).whiteSpace') == 'pre-wrap'
+            assert page.locator('table').evaluate('(el) => getComputedStyle(el).overflowX') == 'visible'
+            assert not external
             browser.close()
     finally:
         app.close()
