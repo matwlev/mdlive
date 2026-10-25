@@ -317,7 +317,7 @@ def test_builtin_theme_selection_and_reload(project):
     selected.write_text('{"theme": "unknown"}')
     with pytest.raises(ValueError, match='theme'):
         config()
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError, match='Unknown theme'):
         config('--theme', 'unknown')
     selected.write_text('{"theme": "basic"}')
     (project / 'override.css').write_text(':root { --mdl-palette-text: red; }')
@@ -339,3 +339,23 @@ def test_builtin_theme_selection_and_reload(project):
         selected.write_text('{"theme": "invalid"}')
         app.changed([selected])
         assert app.config.values['theme'] == 'none'
+
+
+@pytest.mark.parametrize('name', ['basic-dark', 'basic-dynamic'])
+def test_basic_variants_config_and_assets(project, name):
+    selected = project / 'config.json'
+    selected.write_text(json.dumps({'theme': name}))
+    assert config().values['theme'] == name
+    assert config('--theme', 'none').values['theme'] == 'none'
+    with serving(config('--style', '/* override */')) as (app, base):
+        page = get(base + '/')
+        stylesheet = name + '.css'
+        assert page.index('/__mdlive/themes/basic.css') < page.index('/__mdlive/themes/' + stylesheet) < page.index('/* override */')
+        if name == 'basic-dynamic':
+            assert '@import url("./basic-dark.css") (prefers-color-scheme: dark)' in get(base + '/__mdlive/themes/' + stylesheet)
+        assert '--mdl-palette-background: var(--mdl-color-gray-90)' in get(base + '/__mdlive/themes/basic-dark.css')
+        before = app.reload_revision
+        selected.write_text('{"theme": "basic"}')
+        app.changed([selected])
+        assert app.reload_revision != before
+        assert '/__mdlive/themes/basic-dark.css' not in get(base + '/')

@@ -4,10 +4,9 @@ import json
 from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import urlsplit
+from .theme import ASSETS, remote, resolve
 
-ASSETS = ('styles', 'scripts', 'style_links', 'script_links')
-DEFAULTS = dict(theme='basic', host='127.0.0.1', port=8000, open=False, index='README.md',
+DEFAULTS = dict(theme='basic', themes={}, host='127.0.0.1', port=8000, open=False, index='README.md',
                 styles=[], scripts=[], style_links=[], script_links=[], heading_id_generator=None)
 
 
@@ -20,8 +19,8 @@ def parser():
     p.add_argument('--version', action='version', version=f'mdlive {version("mdlive")}')
     p.add_argument('path', nargs='?', default='.', help='Markdown file or directory (default: .)')
     p.add_argument('--config', type=Path, help='Explicit JSON configuration')
-    p.add_argument('--theme', choices=('basic', 'none'), default=None,
-                   help='Built-in reading theme (default: basic; none for browser styling)')
+    p.add_argument('--theme', metavar='NAME', default=None,
+                   help='Named theme (built-in or configured; default: basic; none for browser styling)')
     p.add_argument('--host', default=None, help='Listening address (default: 127.0.0.1)')
     p.add_argument('--index', default=None, help='Directory entry document (default: README.md)')
     p.add_argument('--port', type=int, default=None, help='Listening port (default: 8000)')
@@ -30,10 +29,6 @@ def parser():
                        ('style-link', 'style_links'), ('script-link', 'script_links')]:
         p.add_argument('--' + flag, dest=dest, action='append', help='Repeatable; replaces config array')
     return p
-
-
-def remote(value):
-    return urlsplit(value).scheme.lower() in ('http', 'https')
 
 
 def load_generator(value):
@@ -61,6 +56,7 @@ class Config:
     root: Path
     entry: Path
     generator: object
+    layers: list[dict]
 
 
 def load(args, source=None, rediscover=True, generator=None):
@@ -79,7 +75,9 @@ def load(args, source=None, rediscover=True, generator=None):
         if key in ASSETS:
             valid = isinstance(val, list) and all(isinstance(x, str) for x in val)
         elif key == 'theme':
-            valid = isinstance(val, str) and val in ('basic', 'none')
+            valid = isinstance(val, str) and bool(val)
+        elif key == 'themes':
+            valid = isinstance(val, dict)
         elif key == 'port':
             valid = type(val) is int and 1 <= val <= 65535
         elif key == 'open':
@@ -122,5 +120,7 @@ def load(args, source=None, rediscover=True, generator=None):
         for item in values[key]:
             if not remote(item) and not Path(item).is_file():
                 raise ValueError(f'Theme file does not exist: {item}')
+    layers = resolve(values['theme'], values['themes'], base)
+    layers.append({key: values[key] for key in ASSETS})
     fn = load_generator(values['heading_id_generator']) if rediscover else generator
-    return Config(values, source, args, root, entry, fn)
+    return Config(values, source, args, root, entry, fn, layers)

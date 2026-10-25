@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 from watchfiles import watch
 
 from .config import load, remote
+from .theme import BUNDLED_ASSETS, BUNDLED_DEPENDENCIES
 from .render import page, render, url_path
 
 
@@ -25,8 +26,19 @@ class App:
         self.remap()
 
     def remap(self):
-        self.mapping = {item: f'/__mdlive/assets/{i}' for i, item in enumerate(dict.fromkeys(
-            item for key in ('style_links', 'script_links') for item in self.config.values[key] if not remote(item)))}
+        assets = dict.fromkeys(item for layer in self.config.layers
+                               for key in ('style_links', 'script_links') for item in layer[key]
+                               if not remote(item))
+        for item in list(assets):
+            assets.update(dict.fromkeys(BUNDLED_DEPENDENCIES.get(item, [])))
+        self.mapping = {}
+        custom_index = 0
+        for item in assets:
+            if item in BUNDLED_ASSETS:
+                self.mapping[item] = BUNDLED_ASSETS[item]
+            else:
+                self.mapping[item] = f'/__mdlive/assets/{custom_index}'
+                custom_index += 1
 
     def path(self, request_path):
         decoded = unquote(request_path)
@@ -189,12 +201,12 @@ def make_server(app, host, port):
                         self.wfile.flush()
                     self.close_connection = True
                     return
-                if route == '/__mdlive/themes/basic.css':
-                    self.send(Path(__file__).with_name('themes').joinpath('basic.css').read_bytes(),
-                              'text/css; charset=utf-8')
-                    return
                 if route.startswith('/__mdlive/themes/'):
-                    self.send('Not found', status=404)
+                    path = next((Path(p) for p, url in BUNDLED_ASSETS.items() if url == route), None)
+                    if path is None:
+                        self.send('Not found', status=404)
+                    else:
+                        self.send(path.read_bytes(), 'text/css; charset=utf-8')
                     return
                 if route == '/__mdlive/client.js':
                     self.send(Path(__file__).with_name('client.js').read_bytes(), 'text/javascript; charset=utf-8')

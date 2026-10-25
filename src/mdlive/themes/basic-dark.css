@@ -1,0 +1,17 @@
+/* Basic's shared options and rules load first. Only color intents change.
+   Screen-only mappings preserve Basic's light print palette. */
+@media screen {
+  :root {
+    color-scheme: dark;
+    --mdl-palette-background: var(--mdl-color-gray-90);
+    --mdl-palette-text: var(--mdl-color-gray-10);
+    --mdl-palette-primary: var(--mdl-color-blue-40);
+    --mdl-palette-primary-contrast: var(--mdl-color-gray-90);
+    --mdl-palette-link: var(--mdl-color-blue-40);
+    --mdl-palette-focus: var(--mdl-color-blue-40);
+    --mdl-palette-surface: var(--mdl-color-gray-80);
+    --mdl-palette-surface-contrast: var(--mdl-color-gray-10);
+    --mdl-palette-border: var(--mdl-color-gray-60);
+    --mdl-palette-quote: var(--mdl-color-gray-30);
+  }
+}

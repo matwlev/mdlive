@@ -77,7 +77,7 @@ There is no built-in sidebar or generated directory listing. Themes can use the 
 | `--open` | Open the preview in the default browser | Off |
 | `--host ADDRESS` | Listening address | `127.0.0.1` |
 | `--port PORT` | Listening port | `8000` |
-| `--theme basic\|none` | Built-in theme; `none` uses browser styling | `basic` |
+| `--theme NAME` | Built-in or config-defined theme | `basic` |
 | `--config PATH` | Select a configuration file explicitly | See configuration lookup |
 | `--style CSS` | Inject inline CSS in a `<style>` tag; repeatable | None |
 | `--script JS` | Inject inline JavaScript in a `<script>` tag; repeatable | None |
@@ -98,7 +98,7 @@ mdlive selects one configuration file in this order:
 
 Configuration files are not merged. If neither default file exists, mdlive uses its built-in defaults. An explicitly selected file must exist. An invalid selected configuration produces an error.
 
-CLI options override the selected configuration. For repeatable asset options, supplying one or more occurrences replaces the corresponding configuration array. Arrays for other asset categories remain in effect.
+CLI options override the selected configuration. For repeatable asset options, supplying one or more occurrences replaces the corresponding top-level configuration array. Arrays for other asset categories remain in effect. Selected-theme assets remain in effect and load before top-level additions.
 
 Relative paths in configuration resolve against the configuration file's directory. Relative CLI paths resolve against the working directory, except `--index`, which resolves against the served directory. The served path is chosen by the positional argument, not the configuration.
 
@@ -130,11 +130,11 @@ Relative paths in configuration resolve against the configuration file's directo
 
 mdlive uses the bundled **basic** reading theme by default: light-only, system fonts, a comfortable reading column, and underlined blue links. It adds no navigation or theme JavaScript and makes no external requests. Authors provide navigation through Markdown links.
 
-Use `mdlive --theme none` for browser-default styling, or set `"theme": "none"` in configuration. `--theme basic` explicitly selects the default. CLI selection overrides configuration; edits to the selected config reload the page. Unsupported theme names produce an error.
+Use `mdlive --theme none` for browser-default styling, or set `"theme": "none"` in configuration. `--theme basic` explicitly selects the default. Use `--theme basic-dark` for dark mode or `--theme basic-dynamic` to follow the OS color mode. The same names work in the `theme` configuration field. CLI selection overrides configuration; edits to the selected config reload the page. Unsupported theme names produce an error.
 
 Embedded HTML is sanitized: safe formatting is retained, while scripts and unsafe attributes are removed. Syntax highlighting, GitHub-specific Markdown extensions, Mermaid, and math rendering are outside v1.
 
-Custom themes are collections of injected CSS and optional JavaScript supplied through CLI options or configuration. There is no separate custom theme package format or full-page template interface in v1. Custom styles can extend basic or replace it by selecting `none`.
+Themes are named aliases for CSS and optional JavaScript assets. Built-in and config-defined themes use the same definition format and inheritance resolver. Top-level asset options add to the selected theme; selecting `none` starts with an empty bundle. There is no separate theme installation system or full-page template interface.
 
 ```sh
 # Inline styles and scripts
@@ -151,11 +151,40 @@ mdlive ./docs --config ./preview.json
 
 Injection order is:
 
-1. The selected built-in stylesheet, then custom stylesheet links, then inline styles, in the document head.
-2. The rendered Markdown content in the body.
-3. Inline scripts, then linked scripts, at the end of the body.
+1. Resolve theme parents depth-first in `extends` order, followed by the child. Each named theme appears once, at its first occurrence. Top-level asset settings form the final layer.
+2. In the document head, each layer emits stylesheet links followed by inline styles.
+3. After the rendered Markdown and `window.mdlive` data, each layer emits inline scripts followed by linked scripts.
 
 Order within each array follows configuration or CLI order. Theme scripts are explicitly trusted and execute in the preview page; sanitization applies to document content.
+
+### Defining and composing themes
+
+Define named themes in the selected config file and select one with `theme` or `--theme NAME`:
+
+```json
+{
+  "theme": "my-docs",
+  "themes": {
+    "navigation": {
+      "script_links": ["./themes/navigation.js"]
+    },
+    "my-docs": {
+      "extends": ["basic-dark", "navigation"],
+      "style_links": ["./themes/docs.css"],
+      "styles": [":root { --mdl-layout-content-width: 65ch; }"],
+      "scripts": []
+    }
+  }
+}
+```
+
+Every definition accepts only `extends`, `styles`, `scripts`, `style_links`, and `script_links`. Each is an array of strings and defaults to empty. An empty definition is valid. Styles and scripts are inline source; links accept local paths or HTTP(S) URLs. Local theme paths resolve relative to the config file, even when it is outside the working or served directory. CLI asset paths still resolve relative to the working directory.
+
+Built-in names (`basic`, `basic-dark`, `basic-dynamic`, and `none`) are reserved. `basic-dark` extends `basic` and adds dark intent overrides. `basic-dynamic` extends `basic` and adds a CSS entry file that conditionally imports those same overrides. `none` is empty. Built-in assets resolve relative to the installed package.
+
+With shared ancestors, each named theme loads only once: if `left` and `right` both extend `base`, a child extending `["left", "right"]` loads `base`, `left`, `right`, then the child. Asset entries themselves are not deduplicated. Theme scripts can use `window.mdlive` immediately; initialization should run once and update handlers should tolerate repeated events.
+
+Invalid definitions, reserved-name collisions, unknown references, and inheritance cycles are rejected, including in unused definitions. Local files are checked and watched only for the selected theme, its parents, and top-level assets. Changes to inherited local assets or theme definitions reload the page; invalid config edits retain the last valid configuration. Remote assets are not watched. Relative resources inside custom CSS retain the local asset limitations described above; mdlive does not discover custom CSS dependencies.
 
 ### Basic theme tokens
 
@@ -171,7 +200,7 @@ Load overrides with `--style-link`, or use inline CSS:
 mdlive --style ':root { --mdl-palette-primary: var(--mdl-color-purple-70); --mdl-palette-primary-contrast: var(--mdl-color-white); --mdl-palette-link: var(--mdl-color-purple-70); --mdl-layout-content-width: 65ch; }'
 ```
 
-Links and primary are separate intents, so changing the accent alone does not change link color. Typography intents include `--mdl-type-body-size` and `--mdl-type-title-1-size`; spacing includes `--mdl-space-paragraph`. Basic stays light even when the system prefers dark mode. Dark mode is reserved for a future extension through semantic mappings.
+Links and primary are separate intents, so changing the accent alone does not change link color. Typography intents include `--mdl-type-body-size` and `--mdl-type-title-1-size`; spacing includes `--mdl-space-paragraph`. Basic stays light even when the system prefers dark mode. Select `basic-dark` for a fixed dark palette or `basic-dynamic` to follow the OS color mode, including changes while the page is open. Both reuse Basic’s typography, layout, and literal options; only color intent mappings change. Dynamic selection uses a conditional CSS import, with no JavaScript or user switch. Custom styles load after both bundled stylesheets. All three variants print with the light palette.
 
 ### Theme interface
 

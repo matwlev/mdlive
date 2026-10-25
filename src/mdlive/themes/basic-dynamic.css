@@ -1,0 +1,2 @@
+/* Share the dark intent mappings, selected by the OS color mode. */
+@import url("./basic-dark.css") (prefers-color-scheme: dark);
