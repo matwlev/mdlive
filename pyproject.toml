@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mdlive"
+version = "0.1.0"
+description = "Live Markdown previews in your browser"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["markdown-it-py>=3,<5", "nh3>=0.2,<1", "watchfiles>=1,<2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "playwright>=1.40"]
+
+[project.scripts]
+mdlive = "mdlive.cli:main"
+
+[tool.setuptools.package-data]
+mdlive = ["*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
