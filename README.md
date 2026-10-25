@@ -273,3 +273,7 @@ python -m pytest
 v1 is a local preview tool. It does not include editing, authentication, or publishing. Requests cannot read arbitrary filesystem paths: document and asset access stays within the served root, including symlink resolution, with explicitly configured theme files as the exception described above.
 
 Tests cover CLI and config behavior, Markdown sanitization, heading generators, local links and assets, filesystem boundaries, theme injection and events, live updates, and file deletion/recovery. Chromium checks cover fragment navigation, theme navigation, scroll preservation, and connection recovery.
+
+## License
+
+MIT License. Copyright (c) 2026 Matt Levek. See [LICENSE](LICENSE).
