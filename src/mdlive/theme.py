@@ -7,11 +7,15 @@ BUILTINS = {
     'basic': {'style_links': ['basic.css']},
     'basic-dark': {'extends': ['basic'], 'style_links': ['basic-dark.css']},
     'basic-dynamic': {'extends': ['basic'], 'style_links': ['basic-dynamic.css']},
+    'mode-toggle': {'extends': ['basic-dynamic'], 'style_links': ['mode-toggle.css'],
+                    'script_links': ['mode-toggle.js']},
+    'basic-nav': {'extends': ['basic-dynamic', 'mode-toggle'], 'style_links': ['basic-nav.css'],
+                  'script_links': ['basic-nav.js']},
     'none': {},
 }
 DIRECTORY = Path(__file__).with_name('themes')
 BUNDLED_ASSETS = {str((DIRECTORY / name).resolve()): '/__mdlive/themes/' + name
-                  for name in ('basic.css', 'basic-dark.css', 'basic-dynamic.css')}
+                  for name in ('basic.css', 'basic-dark.css', 'basic-dynamic.css', 'basic-nav.css', 'basic-nav.js', 'mode-toggle.css', 'mode-toggle.js')}
 # Explicit packaged CSS dependencies; custom CSS dependency discovery is out of scope.
 BUNDLED_DEPENDENCIES = {
     str((DIRECTORY / 'basic-dynamic.css').resolve()): [str((DIRECTORY / 'basic-dark.css').resolve())]

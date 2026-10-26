@@ -1,0 +1,95 @@
+/* Mode overrides use the shared Basic option palette and intent contract.
+   Screen-only overrides preserve the theme's light print palette. */
+:root {
+  --mdl-space-1-5: .375rem;
+  --mdl-size-icon-sm: 1rem;
+  --mdl-index-floating: 10;
+  --mdl-layout-mode-icon-size: var(--mdl-size-icon-sm);
+  --mdl-layout-mode-index: var(--mdl-index-floating);
+  --mdl-space-mode-inset: var(--mdl-space-3);
+  --mdl-space-mode-block: var(--mdl-space-1-5);
+  --mdl-space-mode-inline: var(--mdl-space-2);
+  --mdl-space-mode-gap: var(--mdl-space-1);
+  --mdl-space-mode-clearance: var(--mdl-space-12);
+  --mdl-type-mode-size: var(--mdl-font-size-sm);
+}
+@media screen {
+  :root:where([data-mdlive-mode="light"]), :root:where([data-mdlive-mode="dynamic"]) {
+    color-scheme: light;
+    --mdl-palette-background: var(--mdl-color-white);
+    --mdl-palette-text: var(--mdl-color-gray-90);
+    --mdl-palette-primary: var(--mdl-color-blue-60);
+    --mdl-palette-primary-contrast: var(--mdl-color-white);
+    --mdl-palette-link: var(--mdl-color-blue-60);
+    --mdl-palette-focus: var(--mdl-color-blue-60);
+    --mdl-palette-surface: var(--mdl-color-gray-10);
+    --mdl-palette-surface-contrast: var(--mdl-color-gray-90);
+    --mdl-palette-border: var(--mdl-color-gray-20);
+    --mdl-palette-quote: var(--mdl-color-gray-70);
+  }
+  :root:where([data-mdlive-mode="dark"]) {
+    color-scheme: dark;
+    --mdl-palette-background: var(--mdl-color-gray-90);
+    --mdl-palette-text: var(--mdl-color-gray-10);
+    --mdl-palette-primary: var(--mdl-color-blue-40);
+    --mdl-palette-primary-contrast: var(--mdl-color-gray-90);
+    --mdl-palette-link: var(--mdl-color-blue-40);
+    --mdl-palette-focus: var(--mdl-color-blue-40);
+    --mdl-palette-surface: var(--mdl-color-gray-80);
+    --mdl-palette-surface-contrast: var(--mdl-color-gray-10);
+    --mdl-palette-border: var(--mdl-color-gray-60);
+    --mdl-palette-quote: var(--mdl-color-gray-30);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where([data-mdlive-mode="dynamic"]) {
+    color-scheme: dark;
+    --mdl-palette-background: var(--mdl-color-gray-90);
+    --mdl-palette-text: var(--mdl-color-gray-10);
+    --mdl-palette-primary: var(--mdl-color-blue-40);
+    --mdl-palette-primary-contrast: var(--mdl-color-gray-90);
+    --mdl-palette-link: var(--mdl-color-blue-40);
+    --mdl-palette-focus: var(--mdl-color-blue-40);
+    --mdl-palette-surface: var(--mdl-color-gray-80);
+    --mdl-palette-surface-contrast: var(--mdl-color-gray-10);
+    --mdl-palette-border: var(--mdl-color-gray-60);
+    --mdl-palette-quote: var(--mdl-color-gray-30);
+  }
+  }
+}
+#mdlive-mode-toggle {
+  position: fixed;
+  top: var(--mdl-space-mode-inset);
+  right: var(--mdl-space-mode-inset);
+  z-index: var(--mdl-layout-mode-index);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mdl-space-mode-gap);
+  padding: var(--mdl-space-mode-block) var(--mdl-space-mode-inline);
+  border: var(--mdl-border-width) solid var(--mdl-palette-border);
+  border-radius: var(--mdl-border-radius);
+  background: var(--mdl-palette-background);
+  color: var(--mdl-palette-text);
+  font-family: var(--mdl-type-body-family);
+  font-size: var(--mdl-type-mode-size);
+  line-height: var(--mdl-type-body-line-height);
+  cursor: pointer;
+}
+#mdlive-mode-toggle svg {
+  width: var(--mdl-layout-mode-icon-size);
+  height: var(--mdl-layout-mode-icon-size);
+}
+#mdlive-mode-toggle:hover {
+  background: var(--mdl-palette-surface);
+  color: var(--mdl-palette-surface-contrast);
+}
+#mdlive-mode-toggle:focus-visible {
+  outline: var(--mdl-focus-width) solid var(--mdl-palette-focus);
+  outline-offset: var(--mdl-focus-offset);
+}
+@media (width < 64rem) {
+  :root[data-mdlive-mode] body { padding-block-start: var(--mdl-space-mode-clearance); }
+}
+@media print {
+  #mdlive-mode-toggle { display: none; }
+  :root[data-mdlive-mode] body { padding-block-start: var(--mdl-space-reset); }
+}

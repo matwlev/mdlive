@@ -98,7 +98,7 @@ def test_inherited_assets_reload_and_config_recovery(project):
 
 def test_dynamic_bundled_dependencies_are_watched(project):
     app = App(config('--theme', 'basic-dynamic'))
-    assert set(app.mapping) == set(BUNDLED_ASSETS)
+    assert {path.rsplit('/', 1)[-1] for path in app.mapping} == {'basic.css', 'basic-dark.css', 'basic-dynamic.css'}
     dark = next(path for path in app.mapping if path.endswith('/basic-dark.css'))
     before = app.reload_revision
     app.changed([dark])

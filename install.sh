@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Install from this checkout without modifying the system Python.
+# Install from a checkout or GitHub without modifying the system Python.
 set -euo pipefail
 
 usage() {
     cat <<'HELP'
-Usage: ./install.sh [--no-modify-path]
+Usage: bash install.sh [--no-modify-path]
+       curl -fsSL https://raw.githubusercontent.com/matwlev/mdlive/main/install.sh | bash
 
 Install mdlive in ~/.local/share/mdlive/venv and link ~/.local/bin/mdlive.
 Add ~/.local/bin to the appropriate shell startup file unless disabled.
-No sudo required. Run again to install updated code from this checkout.
+Requires Python 3.11+ with venv support. No sudo or Git required.
+Run again to update. A checkout installs local code; a downloaded or piped
+script installs the main branch from GitHub.
 
 Environment overrides:
   MDLIVE_PYTHON       Python 3.11+ executable
@@ -27,10 +30,21 @@ case "${1:-}" in
 esac
 if (( $# > 1 )); then usage >&2; exit 2; fi
 
-source_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# BASH_SOURCE is empty when run as `curl ... | bash`.
+source_dir=""
+script_path="${BASH_SOURCE[0]:-}"
+if [[ -n "$script_path" && -f "$script_path" ]]; then
+    script_dir="$(cd -- "$(dirname -- "$script_path")" && pwd)"
+    if [[ -f "$script_dir/pyproject.toml" && -d "$script_dir/src/mdlive" ]]; then
+        source_dir="$script_dir"
+    fi
+fi
+install_source="${source_dir:-https://github.com/matwlev/mdlive/archive/refs/heads/main.tar.gz}"
 python="${MDLIVE_PYTHON:-}"
 if [[ -z "$python" ]]; then
-    for candidate in python3.14 python3.13 python3.12 python3.11 python3 "$source_dir/.venv/bin/python"; do
+    candidates=(python3.14 python3.13 python3.12 python3.11 python3 python)
+    if [[ -n "$source_dir" ]]; then candidates+=("$source_dir/.venv/bin/python"); fi
+    for candidate in "${candidates[@]}"; do
         if command -v "$candidate" >/dev/null 2>&1 &&
            "$candidate" -c 'import sys; raise SystemExit(sys.version_info < (3, 11))' 2>/dev/null; then
             python="$candidate"
@@ -38,8 +52,8 @@ if [[ -z "$python" ]]; then
         fi
     done
 fi
-if [[ -z "$python" ]] || ! "$python" -c 'import sys; raise SystemExit(sys.version_info < (3, 11))'; then
-    echo 'Python 3.11+ is required. Set MDLIVE_PYTHON to a suitable interpreter.' >&2
+if [[ -z "$python" ]] || ! "$python" -c 'import sys; raise SystemExit(sys.version_info < (3, 11))' </dev/null 2>/dev/null; then
+    echo 'Python 3.11+ was not found. Install Python 3.11 or newer, then run this installer again. You can also set MDLIVE_PYTHON to a suitable interpreter.' >&2
     exit 1
 fi
 
@@ -58,9 +72,16 @@ if [[ -e "$command_path" || -L "$command_path" ]]; then
 fi
 
 if [[ ! -x "$venv/bin/python" ]]; then
-    "$python" -m venv "$venv"
+    if ! "$python" -m venv "$venv" </dev/null; then
+        echo 'Could not create a Python virtual environment. Install venv support for your Python (python3-venv on Debian/Ubuntu), then try again.' >&2
+        exit 1
+    fi
 fi
-"$venv/bin/python" -m pip install --upgrade "$source_dir"
+echo "Installing mdlive from $install_source"
+if ! "$venv/bin/python" -m pip install --upgrade "$install_source" </dev/null; then
+    echo 'Installation failed. Check your internet connection and the error above, then run the installer again.' >&2
+    exit 1
+fi
 if [[ ! -L "$command_path" ]]; then
     ln -s -- "$venv/bin/mdlive" "$command_path"
 fi

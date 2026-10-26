@@ -6,15 +6,31 @@ Version **0.1.0**. Requires Python 3.11 or newer.
 
 ## Installation
 
-Install from this checkout:
+Install on macOS or Linux with Bash and Python 3.11+ (Git is not required):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/matwlev/mdlive/main/install.sh | bash
+```
+
+The installer checks for Python before installing anything and reports a clear error if Python 3.11+ is unavailable. It also requires Python’s `venv` support; on Debian/Ubuntu this may require the `python3-venv` package. It installs the current `main` branch from GitHub. The repository must be publicly accessible.
+
+To review the script first:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/matwlev/mdlive/main/install.sh -o install.sh
+# Read install.sh, then:
+bash install.sh
+```
+
+Or install local code from this checkout:
 
 ```sh
 ./install.sh
 ```
 
-The installer finds Python 3.11+, creates a dedicated environment at `~/.local/share/mdlive/venv`, links the command into `~/.local/bin`, and adds that directory to your shell startup file. Open a new terminal afterward to run `mdlive` from any directory. No environment activation or `sudo` is needed. Run the installer again after updating the checkout.
+The installer finds Python 3.11+, creates a dedicated environment at `~/.local/share/mdlive/venv`, links the command into `~/.local/bin`, and adds that directory to your shell startup file. Open a new terminal afterward to run `mdlive` from any directory. No environment activation or `sudo` is needed. Run the installer again to update. Running it from a checkout installs that checkout; a standalone or piped script installs from GitHub.
 
-Use `./install.sh --no-modify-path` to manage PATH yourself. Set `MDLIVE_PYTHON` to choose an interpreter; `MDLIVE_INSTALL_DIR`, `MDLIVE_BIN_DIR`, and `MDLIVE_PROFILE` override installation locations and the shell startup file. Run `./install.sh --help` for details.
+Use `./install.sh --no-modify-path` to manage PATH yourself, or `curl -fsSL https://raw.githubusercontent.com/matwlev/mdlive/main/install.sh | bash -s -- --no-modify-path` for remote installation. Set `MDLIVE_PYTHON` to choose an interpreter; `MDLIVE_INSTALL_DIR`, `MDLIVE_BIN_DIR`, and `MDLIVE_PROFILE` override installation locations and the shell startup file. Run `./install.sh --help` for details.
 
 Alternatively, install with pipx:
 
@@ -66,7 +82,7 @@ With a directory argument, mdlive serves Markdown files and supporting assets fr
 
 Documents are also accessible by their relative paths, such as `/guide/setup.md`. Relative Markdown links and image paths resolve within the served directory. Markdown extensions are `.md` and `.markdown`, matched case-insensitively.
 
-There is no built-in sidebar or generated directory listing. Themes can use the file list to provide navigation.
+Select `--theme basic-nav` for a sidebar generated from the Markdown folder structure. Other Basic variants have no navigation UI.
 
 ## Options
 
@@ -180,11 +196,49 @@ Define named themes in the selected config file and select one with `theme` or `
 
 Every definition accepts only `extends`, `styles`, `scripts`, `style_links`, and `script_links`. Each is an array of strings and defaults to empty. An empty definition is valid. Styles and scripts are inline source; links accept local paths or HTTP(S) URLs. Local theme paths resolve relative to the config file, even when it is outside the working or served directory. CLI asset paths still resolve relative to the working directory.
 
-Built-in names (`basic`, `basic-dark`, `basic-dynamic`, and `none`) are reserved. `basic-dark` extends `basic` and adds dark intent overrides. `basic-dynamic` extends `basic` and adds a CSS entry file that conditionally imports those same overrides. `none` is empty. Built-in assets resolve relative to the installed package.
+Built-in names (`basic`, `basic-dark`, `basic-dynamic`, `basic-nav`, `mode-toggle`, and `none`) are reserved. `basic-dark` extends `basic` and adds dark intent overrides. `basic-dynamic` extends `basic` and adds a CSS entry file that conditionally imports those same overrides. `none` is empty. Built-in assets resolve relative to the installed package.
 
 With shared ancestors, each named theme loads only once: if `left` and `right` both extend `base`, a child extending `["left", "right"]` loads `base`, `left`, `right`, then the child. Asset entries themselves are not deduplicated. Theme scripts can use `window.mdlive` immediately; initialization should run once and update handlers should tolerate repeated events.
 
 Invalid definitions, reserved-name collisions, unknown references, and inheritance cycles are rejected, including in unused definitions. Local files are checked and watched only for the selected theme, its parents, and top-level assets. Changes to inherited local assets or theme definitions reload the page; invalid config edits retain the last valid configuration. Remote assets are not watched. Relative resources inside custom CSS retain the local asset limitations described above; mdlive does not discover custom CSS dependencies.
+
+### Basic-nav site navigation
+
+Use `mdlive ./docs --theme basic-nav` or set `"theme": "basic-nav"`. This theme composes `basic-dynamic` and `mode-toggle`, initially follows the OS color mode, and adds an always-expanded navigation tree using the existing Markdown file list. `basic` remains the default.
+
+Navigation uses nested unordered lists without bullets. Folder and page labels replace runs of hyphens and underscores with spaces, trim surrounding spaces, and capitalize the first character while preserving other capitalization. Page labels omit `.md` or `.markdown`, case-insensitively. Display labels decode URL characters; links retain the original encoded paths.
+
+The root README appears first as **Home**. A folder with a direct README links its label to that page and omits the duplicate child entry; otherwise its label is plain text. README matching is case-insensitive. When multiple candidates exist, the first in deterministic path order is used and the others remain ordinary links. Folders without Markdown descendants and non-Markdown files are omitted. Within each folder, folders appear first, then pages, in case-insensitive natural order (2 before 10), with original paths breaking ties.
+
+The current page is highlighted and marked `aria-current="page"`, including when opened through `/`. Links perform normal page navigation. File additions and removals update the tree automatically. The navigation preserves its scroll and surviving focused link across tree changes; content-only edits leave its nodes intact. In single-file mode, navigation includes Markdown files beneath that file’s served parent directory, matching the standard file-list behavior.
+
+At widths of at least `64rem`, the roughly `16rem` sidebar stays visible and scrolls independently when needed. Below that width, the complete tree stacks above the document. There are no collapsible branches or navigation toggles. Printing hides navigation and uses the normal full-width light print layout. If JavaScript fails or is disabled, the document retains Basic’s readable single-column layout.
+
+Navigation sizing and spacing use the same options/intents convention, including `--mdl-layout-nav-width`, `--mdl-space-nav-gap`, and `--mdl-type-nav-size`. Colors reuse the existing page, surface, and primary foreground/background pairs.
+
+### Reusable color-mode toggle
+
+`basic-nav` includes a compact floating button in the top-right corner. The button displays the selected mode and cycles **Light → Dark → Dynamic → Light**. Dynamic follows the OS color mode, including changes while the page is open. The control is keyboard accessible and hidden when printing; the light print palette remains in effect.
+
+The `mode-toggle` built-in is also reusable without navigation:
+
+```json
+{
+  "theme": "my-theme",
+  "themes": {
+    "my-theme": {
+      "extends": ["basic", "mode-toggle"],
+      "style_links": ["./my-theme.css"]
+    }
+  }
+}
+```
+
+`mode-toggle` extends `basic-dynamic` to provide the shared option palette and styling. It can also be selected directly with `--theme mode-toggle`. Existing Basic variants remain unchanged unless this add-on is included.
+
+The initial mode is Dynamic unless a valid preference was saved. The choice is stored under `mdlive.color-mode` in browser local storage for the preview’s origin (host and port), survives navigation and reloads, and synchronizes across open pages at that origin. When storage is unavailable, switching still works for the current page.
+
+The control sets `data-mdlive-mode="light|dark|dynamic"` on the document root. Its screen-only CSS remaps Basic’s palette intents to the appropriate options. Custom styles loaded afterward can still override those intents. Reusing this add-on assumes the shared Basic color options and palette intent contract. The control’s spacing and size use options and intents such as `--mdl-space-mode-inset` and `--mdl-type-mode-size`; narrow screens reserve a small top gutter to keep it clear of content.
 
 ### Basic theme tokens
 

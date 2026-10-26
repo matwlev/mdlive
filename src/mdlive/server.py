@@ -206,7 +206,8 @@ def make_server(app, host, port):
                     if path is None:
                         self.send('Not found', status=404)
                     else:
-                        self.send(path.read_bytes(), 'text/css; charset=utf-8')
+                        kind = 'text/javascript' if path.suffix == '.js' else 'text/css'
+                        self.send(path.read_bytes(), kind + '; charset=utf-8')
                     return
                 if route == '/__mdlive/client.js':
                     self.send(Path(__file__).with_name('client.js').read_bytes(), 'text/javascript; charset=utf-8')

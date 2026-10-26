@@ -19,7 +19,7 @@ test = ["pytest>=8", "playwright>=1.40"]
 mdlive = "mdlive.cli:main"
 
 [tool.setuptools.package-data]
-mdlive = ["*.js", "themes/*.css"]
+mdlive = ["*.js", "themes/*.css", "themes/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
